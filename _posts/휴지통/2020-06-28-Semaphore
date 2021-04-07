@@ -1,0 +1,153 @@
+---
+title:  "[Operating System] Semaphore"
+excerpt: "[Operating System] Semaphore 정리"
+toc: true
+toc_sticky: true
+categories:
+  - cs
+tags:
+  - Operating System
+---
+
+# 📝Semaphore
+
+## 핵심 요약
+
+`"Semaphore는 프로세스 동기화 기능을 간편하게 제공하는 추상 자료형이다. Semaphore 변수는 정수 값을 가지는데, 이는 자원의 개수를 표현한다. Semaphore의 P연산과 V연산은 각각 공유 자원의 획득과 반납을 수행하는 연산이다. 프로그래머는 P연산과 V연산을 통해 프로세스 동기화를 수행할 수 있다."`
+
+
+
+## 📌 Busy wating(Spin-Lock) Semaphores 
+
+```c++
+semaphore S // integer variable
+
+void P(S){ // 세마포어 변수가 양수라면 세마포어 변수를 하나 감소하고, 공유 자원을 획득한다.
+	while(S<=0) 
+    	do no-op; // i.e. wait 세마포어 변수가 음수라면 대기한다.(busy-wating)
+	S--;    
+}
+
+void V(S){ // 세마포어 변수를 하나 증가 시킨다. (공유 자원의 반납.)
+    S++;
+}
+```
+
+* 세마포어는 프로세스 동기화 기능을 간편하게 제공하는 추상 자료형이다.
+* 세마포어 변수는 정수 값을 가지는데, 이는 자원의 개수를 표현한다. 
+* 세마포어의 P 연산은 세마포어 변수를 하나 감소 시킨다. 이는 1개 공유 자원의 획득을 뜻한다.
+* 세마포어의 V 연산은 세마포어 변수를 하나 증가 시킨다. 이는 1개 공유 자원의 반납을 뜻한다.
+
+
+
+```c++
+// Synchronization variable
+semaphore mutex; // 1로 초기화 한다. 즉, 1개의 프로세스가 CS에 진입할 수 있다. 
+
+// Process Pi
+do {
+    P(mutex); // 세마포어 변수가 양수라면, 하나 감소 시키고 CS에 진입한다.음수라면 busy waiting 한다.
+    // critical section
+    V(mutex); 
+}while(1);
+```
+
+* critical section 진입 전에는 P연산으로 자원을 획득하고, critical section 수행후에는 V연산으로 자원을 반납한다.
+* 프로그래머는 위와 같이 P와 V연산으로 프로세스 동기화를 수행할 수 있다.
+* busy-waiting은 효율적이지 않다. (block & wake up 방식으로 세마포어를 구현할 수도 있다.)
+
+
+
+## 📌 Block and Wake up(Sleep-Lock) Semaphores 
+
+```c++
+typedef struct{
+	int value; // 세마포어 변수
+    struct process *L; // 프로세스 대기 큐(queue)
+}semaphore;
+```
+
+* block & wake up 세마포어는 위와 같이 정의된다. 
+* block : kernel은 block을 호출한 프로세스를 suspend 시킨다. 그리고 해당 프로세스의 PCB를 세마포어의 프로세스 대기 큐에 넣는다.
+* wakeup(P) : block 된 프로세스 P를  wake up 시킨다. 해당 프로세스의 PCB를 read queue로 옮긴다. 
+
+   
+
+```c++
+void P(S){
+	S.value--; // 세마포어 변수를 하나 감소 시킨다.
+    if(S.value < 0){ // 세마포어 변수가 음수라면,
+        block(); // 해당 프로세스를 block 시킨다. (S.L에 해당 프로세스를 넣는다.)
+    }
+}
+
+void V(S){
+    S.value++; // 세마포어 변수를 하나 증가 시킨다.
+    if(S.value <= 0){ // 해당 프로세스를 wake up 한다. (S.L에서 해당 프로세스를 제거한다.)
+        wakeup(P);
+    }
+}
+```
+
+* block & wake up 세마포어의 P, V연산은 위와 같이 정의된다. 
+* P연산 수행시 자원의 여분이 없으면, 프로세스를 block 시킨다.
+* V연산은 자원을 반납한다. 이때 자원을 기다리고 있는 block된 프로세스가 존재하면, wake up 해준다.
+
+
+
+## 📌 어떤 구현방식의 세마포어가 좋은가?
+
+* Busy-waiting VS Block & wakeup
+
+* Critical Section의 길이가 긴 경우 Block & wakeUp이 적당하다
+
+* Critical Section의 길이가 매우 짧은 경우 Block & wakeup 오버헤드가 busy-wait 오버헤드보다 클 수 있다.
+
+* 일반적으로는 Block & wakeUp 세마포어가 더 좋다.
+
+  
+
+## 📌 Two Types of Semaphores
+
+### Counting semaphore 
+
+* 세마포어 변수는 0이상인 임의의 정수 값
+* 주로  resource counting에 사용한다.
+
+### Binary semaphore(=mutex)
+
+* 세마포어 변순은 0 또는 1의 값만 가질 수 있다.
+
+* 주로 mutual exclusion (lock/unlock)에 사용한다.
+
+  
+
+## 📌 Semaphore의 문제점
+
+### Deadlock 
+
+* 둘 이상의 프로세스가 서로 상대방에 의해 충족될 수 있는 event를 무한히 기다리는 현상
+
+```
+[P0]      [P1]
+P(S);     P(Q);
+P(Q);     P(S);
+  .		   .
+  .        .
+  .        .
+V(S);     V(Q);
+V(Q);     V(S);
+```
+
+* 프로세스 P0와 P1은 S와 Q 두 자원이 모두 필요하다 하지만 S,Q를 하나씩 가지고 있는 상태다. 이런 경우 무한 대기가 발생하는 데, 이를 Dead Lock이라고 한다. (Starvation이라고 말할 수도 있겠다.)
+
+### Starvation 
+
+* indefinite blocking.  프로세스가 suspend된 이유에 해당하는 samaphore  큐에서 빠져나갈 수 없는 현상
+
+
+
+# **🕶 더 알아보기**
+
+* [https://velog.io/@conatuseus/OS-%EC%84%B8%EB%A7%88%ED%8F%AC%EC%96%B4%EC%99%80-%EB%AE%A4%ED%85%8D%EC%8A%A4](https://velog.io/@conatuseus/OS-세마포어와-뮤텍스)
+

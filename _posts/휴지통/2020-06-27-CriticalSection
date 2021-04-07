@@ -1,0 +1,18 @@
+---
+title:  "[Operating System] Critical Section"
+excerpt: "[Operating System] Critical Section 정리"
+toc: true
+toc_sticky: true
+categories:
+  - cs
+tags:
+  - Operating System
+---
+
+# 📝Critical Section
+
+`"다수의 프로세스가 동시에 사용할 수 없는 공유 자원을 Critical Resource(임계자원)라고 하며, 그 공유자원에 접근하는 프로그램 코드의 일부분을 Critical Section(임계영역)이라고 한다. Critical Section에는 하나의 프로세스만 진입할 수 있다."`
+
+* 두 개 이상의 프로세스가 동시에 프린터를 출력하고자 할 때, 한 번에 한 개의 프로세스에 대해서만 출력이 되야한다. 이 때, 프린터는 Critical Resource이고, 프로세스에서 프린터에 명령을 내리거나 데이터를 보내는 프로그램 코드는 Critical Section이 된다.
+
+* Mutual Exclusion(상호 배제)이란 특정 한 시점에 단 하나의 프로세스만이 Critical Section에 접근할 수 있는 것을 의미한다.

@@ -1,0 +1,26 @@
+---
+title:  "[Operating System] Race Condition"
+excerpt: "[Operating System] Race Condition 정리"
+toc: true
+toc_sticky: true
+categories:
+  - cs
+tags:
+  - Operating System
+---
+
+# 📝Race Condition
+
+`"Race Condition은 여러 프로세스들이 동시에 공유 데이터를 접근하는 상황이다. 공유 데이터의 동시 접근은 누가 마지막에 데이터에 접근 했는지에 따라 그 결과가 달라질 수 있다. 따라서 Race Condition을 막기 위해 동시 접근을 동기화(Synchronize) 해야한다."`
+
+
+
+## 🔮 Race Condition이 발생하는 예
+
+* Multi-Processor System에서 메모리를 공유하는 경우
+
+* 프로세스들이 공유 메모리를 사용하는 경우
+
+* Kernel mode 수행 중 Interrupt가 발생하여, Interrupt 처리 루틴이 수행되는 경우 (Interrupt 처리 루틴도 Kernel 코드이다. 즉, Kernel 데이터에 중복으로 접근하는 경우다. )
+
+* 프로세스가 System call을 하여 Kernel mode로 수행 중일때, Context Switch가 일어나는 경우 (System call을 하는 동안에 프로세스들은 Kernel address space를 공유하게 된다.)
