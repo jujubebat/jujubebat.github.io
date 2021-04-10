@@ -1,5 +1,5 @@
 ---
-title: "Entity vs VO vs DTO"
+title: "TDD & Unit Test"
 categories:
   - dev
 tags:
@@ -23,5 +23,4 @@ tags:
 - ex) 어떤 객체의 특정 필드들만 추려서 JSON 형식으로 전송해야하는 경우 데이터 가공 처리를 위해 DTO를 사용한다.
 
 ## 참고
-- https://jobjava00.github.io/language/java/basic/collections/
 - https://webdevtechblog.com/entity-vo-dto-666bc72614bb
