@@ -1,12 +1,12 @@
 ---
-title: "TDD와 단위테스트"
+title: "TDD(Test Driven Development)와 단위테스트"
 categories:
   - dev
 tags:
   - Java
 ---
 
-# TDD(Test Driven Development)
+# TDD란?
 - TDD는 "테스트 주도 개발"을 뜻한다.
 - 반복 테스트를 이용한 소프트웨어 방법론이다.
 - 작은 단위의 테스트 케이스를 작성하고 이를 통과하는 코드를 추가하는 단계를 반복하여 구현한다.
