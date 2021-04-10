@@ -25,13 +25,8 @@
     justify-content: space-between;
     font-family: $sans-serif-narrow;
 
-    // 메뉴 글씨 크기 수정.
-    font-size: 20px;
-    font-weight: bold;
-
     @include breakpoint($x-large) {
-      //max-width: $max-width;
-      max-width: 1570px; // 네비게이션 너비 수정.
+      max-width: $max-width;
     }
 
     nav {

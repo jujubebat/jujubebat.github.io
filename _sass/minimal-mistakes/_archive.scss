@@ -32,14 +32,11 @@
 }
 
 .archive__subtitle {
-  margin: 1.414em 0 0;
+  margin: 1.414em 0 0.5em;
   padding-bottom: 0.5em;
   font-size: $type-size-5;
   color: $muted-text-color;
   border-bottom: 1px solid $border-color;
-  // 서브타이틀 (최근포스트) 폰트 크기, 위치 수정.
-  font-size: 28px;
-  margin: 0.414em 0 0;
 
   + .list__item .archive__item-title {
     margin-top: 0.5em;
@@ -202,6 +199,14 @@
   .page__meta {
     margin: 0 0 4px;
     font-size: 0.6em;
+  }
+
+  .page__meta-sep {
+    display: block;
+
+    &::before {
+      display: none;
+    }
   }
 
   .archive__item-title {
@@ -455,9 +460,4 @@
 	.feature__wrapper {
 		display: inline-block;
 	}
-}
-
-// 최근 포스트 글 목록 폰트 크기 수정.
-.list__item{
-  font-size : 19px;
 }

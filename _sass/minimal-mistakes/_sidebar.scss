@@ -185,7 +185,6 @@
   vertical-align: middle;
   font-family: $sans-serif;
   z-index: 20;
-  position: relative;
   cursor: pointer;
 
   li:last-child {
@@ -257,8 +256,6 @@
     border: 0;
     background: transparent;
     box-shadow: none;
-    // 프로필 아래 폰트 크기 수정.
-    font-size : 22px;
   }
 
   &:before {

@@ -16,7 +16,6 @@
 
   @include breakpoint($x-large) {
     max-width: $max-width;
-    margin-left: 170px;
   }
 }
 
@@ -45,8 +44,7 @@ body {
 
   @include breakpoint($x-large) {
     width: calc(100% - #{$right-sidebar-width});
-    padding-right: 0px; //$right-sidebar-width;
-    font-size: 17px;
+    padding-right: $right-sidebar-width;
   }
 
   .page__inner-wrap {
@@ -73,8 +71,6 @@ body {
 .page__title {
   margin-top: 0;
   line-height: 1;
-  font-size: 33px;
-  margin-bottom: 40px;
 
   & + .page__meta {
     margin-top: -0.5em;
@@ -301,6 +297,12 @@ body {
   margin-bottom: 10px;
   font-size: $type-size-6;
   text-transform: uppercase;
+}
+
+.page__meta-sep::before {
+  content: "\2022";
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 
 /*
