@@ -1,0 +1,24 @@
+---
+title: "Servlet"
+categories:
+  - dev
+tags:
+  - Java
+  - Spring
+---
+
+# 서블릿
+
+- WAS에서 동작하는 Java 클래스다. 동적 페이지 생성?
+- 서블릿은 HttpServlet 클래스를 상속받아야 한다.
+- 서블릿을 직접 써서 개발하기 보단 프레임워크를 사용한다.
+
+https://www.boostcourse.org/web316/lecture/16686?isDesc=false
+
+
+
+
+
+
+# 참고
+
