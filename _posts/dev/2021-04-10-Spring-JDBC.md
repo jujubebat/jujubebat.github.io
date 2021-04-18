@@ -8,7 +8,6 @@ tags:
 ---
 
 # Spring JDBC
-
 - JDBC를 사용하면 반복되는 지루한 개발요소가 있다. 
 
 > JDBC 프로그래밍 순서
@@ -150,6 +149,15 @@ public int useBeanPropertySqlParameterSource(Customer customer) {
 # SimpleJdbcInsert 클래스
 
 - `SimpleJdbcInsert` 를 사용해서 SQL문 작성 없이 쉽게 insert 할 수 있다.
+- 그냥 insert만 하고 싶다면 `execute` 메서드를, insert후 key값을 받아오고 싶으면 `executeAndReturnKey`를 사용하면 된다.
+
+```java
+public SimpleInsertDao(DataSource dataSource) {
+    this.simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
+            .withTableName("customers") // 테이블 지정
+            .usingGeneratedKeyColumns("id"); // insert시 id가 자동생성 되도록 설정
+}
+```
 
 #### executeAndReturnKey (Map사용)
 
@@ -158,7 +166,7 @@ public Customer insertWithMap(Customer customer) {
     Map<String, Object> parameters = new HashMap<>(2);
     parameters.put("first_name",customer.getFirstName());
     parameters.put("last_name",customer.getLastName());
-    Long id = insertActor.executeAndReturnKey(parameters).longValue();
+    Long id = simpleJdbcInsert.executeAndReturnKey(parameters).longValue();
     return new Customer(id, customer.getFirstName(), customer.getLastName());
 }
 ```
@@ -168,7 +176,7 @@ public Customer insertWithMap(Customer customer) {
 ```java
 public Customer insertWithBeanPropertySqlParameterSource(Customer customer) {
     SqlParameterSource parameters = new BeanPropertySqlParameterSource(customer);
-    Long id = insertActor.executeAndReturnKey(parameters).longValue();
+    Long id = simpleJdbcInsert.executeAndReturnKey(parameters).longValue();
     return new Customer(id, customer.getFirstName(), customer.getLastName());
 }
 ```
