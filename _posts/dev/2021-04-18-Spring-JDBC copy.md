@@ -8,7 +8,7 @@ tags:
 ---
 
 # Spring JDBC
-- JDBC를 사용하면 반복되는 지루한 개발요소가 있다. 
+- JDBC를 사용하면 반복되는 지루한 개발요소가 생긴다. 
 
 > JDBC 프로그래밍 순서
   1. JDBC 드라이버를 로딩한다.
@@ -18,20 +18,18 @@ tags:
   5. Connection, PreparedStatement(Statement), ResultSet 객체를 close 한다.
 
 - Spring JDBC는 이러한 반복적인 JDBC 저수준 구현 세부사항을 대신 처리해준다.
-- Spring JDBC를 사용하여, 세부사항은 프레임워크에게 맡기고, 애플리케이션 개발자는 필요한 부분만 구현할 수 있게된다.
+- Spring JDBC를 사용하면, 세부사항은 프레임워크에게 맡기고, 애플리케이션 개발자는 필요한 부분만 구현할 수 있게된다.
 
 ![2021-04-18 12 44 42](https://user-images.githubusercontent.com/37281119/115133528-ddd66380-a043-11eb-8454-dc92db9f4b5e.jpg)
 
 # JdbcTemplate 클래스
 
 - Spring JDBC 패키지중 하나인 **org.springframework.jdbc.core** 에 포함된 클래스다.
-
 - `JdbcTemplate`를 사용해서 편하게 Jdbc 프로그래밍을 할 수 있다.
 - 리소스 생성, 해지를 처리해서 연결을 닫는 것을 잊어 발생하는 문제 등을 피할 수 있도록 한다.
 - 스테이먼트(Statement)의 생성과 실행을 처리한다.
 - SQL 조회, 업데이트, 저장 프로시저 호출, ResultSet 반복호출 등을 실행한다.
 - JDBC에서 `SQLException`이 발생하는 경우 런타임 예외인  `DataAccessException`로 포장해서 예외를 던진다. 
-
 - JDBC를 직접 사용할때 나타나는 반복적인 코드를 **템플릿 메서드 패턴**이라는 디자인패턴으로 줄였기 떄문에 **JDBC Template**라는 이름이 붙었다.
 - `JdbcTemplate`의 몇가지 메서드를 알아보자
 
@@ -182,7 +180,6 @@ public Customer insertWithBeanPropertySqlParameterSource(Customer customer) {
 ```
 
 # 참고
-
 - https://velog.io/@seculoper235/JDBC-5편-jdbcTemplate
 - https://www.boostcourse.org/web316/lecture/20660?isDesc=false
 - https://www.inflearn.com/course/스프링-입문-스프링부트/lecture/49596?tab=curriculum
