@@ -1,0 +1,66 @@
+---
+Atitle: "DTO는 어느 레이어까지 사용하는 것이 맞을까?"
+categories:
+  - dev
+tags:
+  - Java
+  - Spring
+---
+
+컨트롤러, 서비스, 레포지토리 레이어로 나누어진 스프링 웹 애플리케이션에서 DTO를 사용하는 경우에서 DTO는 컨트롤러에서 받는 DTO는 어느 레이어까지 사용해야할까? 
+
+#### 레이어드 아키텍처?
+
+먼저 레이어드 아키텍처의 목적에 대해서 생각해봤다. 복잡한 소프트웨어를 여러개의 레이어로 나누어 모듈화하면, 각 설계 요소가 분리되고 유지 보수성을 높일 수 있다. 이러한 이유로 크고 복잡한 네트워크도 TCP/IP라는 계층으로 나눠져있다. 레이어를 나누는 것 즉, 계층화의 핵심은 한 계층의 모든 요소는 오직 같은 계층에 존재하는 다른 요소 또는 계층상 아래에 위치한 요소에만 의존하는 것이다. 어떤 계층의 상위 계층에 대한 의존, 결합은 최소화 해야한다. 그래야 모듈화의 이점을 볼 수 있다. 
+
+#### DTO는 어디까지 전달하는게 좋을까?
+
+앞서말한 레이어드 아키텍쳐의 장점 때문에 스프링 웹 프로젝트에서 레이어드 아키텍쳐를 적용해봤다. 프론트(뷰)에서 보낸 json 형태의 데이터를 @ResponseBody를 사용해 DTO로 변환하여 컨트롤러에 전달하고, 이 DTO를 그대로 서비스 레이어에 전달했다. DTO를 사용하는 이유는 "계층간 데이터 전달"이므로, 그래도 된다고 생각했었다. 
+
+하지만 이렇게 할 경우  뷰 - 컨트롤러 - 서비스에서 각각 의존이 발생하는 문제가 있다는 것을 코드리뷰를 통해 알게되었다. 만약에 나중에 기능을 변경해야할 경우 뷰, 컨트롤러, 서비스를 모두 수정해야하는 상황이 발생할 수 있다. 이렇게 되면 모듈화의 이점을 가져가기 위해 레이어드 아키텍쳐를 사용한 의미가 없어진다고 생각한다.
+
+그래서 내린 내 수준에서의 작은 결론은 ` "컨트롤러 메서드에서 DTO를 도메인 객체로 변환한 후 서비스 레이어로 넘겨준다."`이다. 이렇게 하면 뷰와 컨트롤러에 종속되고 있던 서비스를 분리할 수 있다. 즉, 컨트롤러가 뷰로부터 어떤 DTO 형태로 데이터를 전달받더라도 서비스는 상관 없어진다. 또한 여러 종류의 컨트롤러에서 한 서비스를 사용할 수 있게 된다. 
+
+아래 코드를 참고해보자 
+
+```java
+@Controller
+class PostRestController {
+
+   //...
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public PostDto createPost(@RequestBody PostDto postDto) {
+        Post post = convertToEntity(postDto);
+        Post postCreated = postService.createPost(post));
+        return convertToDto(postCreated);
+    }
+
+    @GetMapping(value = "/{id}")
+    @ResponseBody
+    public PostDto getPost(@PathVariable("id") Long id) {
+        return convertToDto(postService.getPostById(id));
+    }
+
+    @PutMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updatePost(@RequestBody PostDto postDto) {
+        Post post = convertToEntity(postDto);
+        postService.updatePost(post);
+    }
+}
+// 출처 : https://www.baeldung.com/entity-to-and-from-dto-for-a-java-spring-application
+```
+
+여러 자료를 참고해보니 정답이 없는 문제라고 느꼈다. 지금은 여기까지만 고민하도록 하고 나중에 다시 고민해봐야겠다.
+
+# 참고 
+
+- https://www.slipp.net/questions/93
+- https://www.slipp.net/questions/23
+- https://os94.tistory.com/157
+- https://wikibook.co.kr/article/layered-architecture/
+- https://wikibook.co.kr/article/layered-architecture/
+- https://velog.io/@ljinsk3/About-DTO-Data-Transfer-Object
