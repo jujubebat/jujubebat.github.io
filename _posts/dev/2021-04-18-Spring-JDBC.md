@@ -1,5 +1,5 @@
 ---
-title: "Spring JDBC"
+title: "Java와 Spring의 데이터 접근 기술"
 categories:
   - dev
 tags:
@@ -7,177 +7,88 @@ tags:
   - Spring
 ---
 
+# JDBC(Java Database Connectivity)
+
+- 자바로 데이터베이스에 접속할 수 있게 해주는 자바 API다. 
+
+## JDBC 작업 순서
+
+1. DB 연결을 위한 Connection을 가져온다.
+
+2. SQL을 담은 Statement(또는 PreparedStatement)를 만든다.
+
+3. 만들어진 Statement를 실행한다.
+
+4. 조회의 경우 SQL 쿼리의 실행 결과를 ResultSet으로 받아서 정보를 저장할 오브젝트(여기서 는 User)에 옮겨준다.
+
+5. 작업 중에 생성된 Connection, Statement, ResultSet 같은 리소스는 작업을 마친 후 반드시 닫아준다.
+
+6. JDBC API가 만들어내는 예외exception를 잡아서 직접 처리하거나, 메소드에 throws를 선언 해서 예외가 발생하면 메소드 밖으로 던지게 한다.
+
+### 샘플 코드 
+
+- 아래 코드는 users 테이블의 레코드 수 조회 쿼리를 실행하는 jdbc 코드다.
+- DB 접근을 위한 Connection, PreparedStatement, ResultSet와 같은 리소스들은 보통 풀(Pool) 방식으로 운영된다.
+- 미리 정해진 풀 안에 리소스 객체들을 미리 만들어 둔 다음 필요할때 리소스들을 할당해주고, 사용을 마치면 다시 풀로 반환 받는다.
+- 요청이 매우 많은 서버환경에서는 매번 새로운 리소스를 생성하는 대신 풀에 미리 만들어둔 리소스를 돌려가며 사용하는 편이 훨씬 유리하다. 
+- 사용한 리소스는 pool로 다시 반환해야 한다. 그렇지 않으면 풀에 있는 리소스가 고갈되고 서버에서는 리소스가 꽉 찼다는 에러가 나면서 서비스가 중단될 것이다. 
+- 아래 코드를 보면 할당 받은 리소스를 반드시 닫아주기 위해 **복잡한 예외 처리 로직**이 등장하는 것을 볼 수 있다. 
+
+```java
+public int getCount() throws SQLException {
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            c = dataSource.getConnection();
+            ps = c.prepareStatement("select count(*) from users");
+
+            // ResultSet 도 다양한 SQLException 이 발생할 수 있는 코드이므로 try 블록 안에 둬야 한다.
+            rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1);
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            // 만들어진 ResultSet을 닫아주는 기능. close()는 만들어진 순서의 반대로 하는 것이 원칙이다.
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
+    }
+```
+
 # Spring JDBC
-- JDBC를 사용하면 반복되는 지루한 개발요소가 생긴다. 
 
-> JDBC 프로그래밍 순서
-  1. JDBC 드라이버를 로딩한다.
-  2. Connection 객체를 생성한다.
-  3. PreparedStatement(Statement) 객체를 생성하고 SQL를 수행한다.
-  4. SQL 문에 대한 결과물이 있다면 ResultSet 객체를 생성한다.
-  5. Connection, PreparedStatement(Statement), ResultSet 객체를 close 한다.
+- 앞서 살펴본 코드와 같이 JDBC API를 사용하면 복잡한 예외 처리 로직이 반복된다. 변화되는 부분은 SQL문을 실행하는 try문 뿐이다.
+- JDBC API를 사용하면 위와 같은 복잡한 예외 처리 로직을 반복 구현하지 않아도 된다. 
+- JdbcTemplate 클래스에는 위와같은 반복되는 예외 처리 로직을 미리 갖고 있다. 이를 **템플릿**이라고 한다. 
+- 그리고 try 문안에서 실행되는 로직로 미리 갖고 있다. 이를 **콜백**이라고 한다. 
+- 우리가 JdbcTemplate 메서드에 SQL 문을 전달하면 JdbcTemplate는 내부적으로 SQL문 실행에 대한 적절한 콜백을 템플릿으로 전달해서 실행한다. 이러한 동작 방식을 **템플릿/콜백 패턴**이라고 한다. 전략 패턴의 컨텍스트와 전략이 같은 곳에 위치 하는 구조라고 생각하면 된다. 
 
-- Spring JDBC는 이러한 반복적인 JDBC 저수준 구현 세부사항을 대신 처리해준다.
-- Spring JDBC를 사용하면, 세부사항은 프레임워크에게 맡기고, 애플리케이션 개발자는 필요한 부분만 구현할 수 있게된다.
+- 또한 Spring JDBC는 JDBC가 던지는 `SQLException` 을 런타임 예외인  `DataAccessException`로 포장해서 던진다. 
 
-![2021-04-18 12 44 42](https://user-images.githubusercontent.com/37281119/115133528-ddd66380-a043-11eb-8454-dc92db9f4b5e.jpg)
+# Spring Data JDBC 
 
-# JdbcTemplate 클래스
+# Hibernate
 
-- Spring JDBC 패키지중 하나인 **org.springframework.jdbc.core** 에 포함된 클래스다.
-- `JdbcTemplate`를 사용해서 편하게 Jdbc 프로그래밍을 할 수 있다.
-- 리소스 생성, 해지를 처리해서 연결을 닫는 것을 잊어 발생하는 문제 등을 피할 수 있도록 한다.
-- 스테이먼트(Statement)의 생성과 실행을 처리한다.
-- SQL 조회, 업데이트, 저장 프로시저 호출, ResultSet 반복호출 등을 실행한다.
-- JDBC에서 `SQLException`이 발생하는 경우 런타임 예외인  `DataAccessException`로 포장해서 예외를 던진다. 
-- JDBC를 직접 사용할때 나타나는 반복적인 코드를 **템플릿 메서드 패턴**이라는 디자인패턴으로 줄였기 떄문에 **JDBC Template**라는 이름이 붙었다.
-- `JdbcTemplate`의 몇가지 메서드를 알아보자
-
-## Select
-
-#### public <T> T queryForObject(String sql, Class<T> requiredType)
-
-```java
-public int count() {
-    String sql = "select count(*) from customers";
-    return jdbcTemplate.queryForObject(sql, Integer.class);
-}
-```
-
-#### public <T> T queryForObject(String sql, Class<T> requiredType, @Nullable Object... args)
-
-```java
-public String getLastName(Long id) {
-    String sql = "select last_name from customers where id = ?";
-    return jdbcTemplate.queryForObject(sql, String.class, id);
-}
-```
-
-#### public <T> T queryForObject(String sql, RowMapper<T> rowMapper, @Nullable Object... args)
-
-```java
-public Customer findCustomerById(Long id) {
-        String sql = "select id, first_name, last_name from customers where id = ?";
-        return jdbcTemplate.queryForObject(sql, actorRowMapper,id);
-    }
-```
-
-람다를 사용하면 아래와 같이 쓸 수 있다.
-
-```java
-    public Customer findCustomerById(Long id) {
-        String sql = "select id, first_name, last_name from customers where id = ?";
-
-        return jdbcTemplate.queryForObject(sql,
-           (resultSet, rowNum) -> new Customer(resultSet.getString("first_name"),
-                 resultSet.getString("last_name")), id);
-    }
-```
-
-#### public <T> List<T> query(String sql, RowMapper<T> rowMapper)
-
-```java
-public List<Customer> findAllCustomers() {
-    String sql = "select id, first_name, last_name from customers";
-
-    return this.jdbcTemplate.query(sql,
-        (resultSet, rowNum) -> new Customer(resultSet.getString("first_name"),
-            resultSet.getString("last_name")));
-}
-```
-
-#### public <T> List<T> query(String sql, RowMapper<T> rowMapper, @Nullable Object... args)
-
-```java
- public List<Customer> findCustomerByFirstName(String firstName) {
-        String sql = "select id, first_name, last_name from customers where first_name = ?";
-        return this.jdbcTemplate.query(sql,
-            (resultSet, rowNum) -> new Customer(resultSet.getString("first_name"),
-                resultSet.getString("last_name")), firstName);
- }
-```
-
-## insert
-
-#### public int update(String sql, @Nullable Object... args)
-
-```java
-public void insert(Customer customer) {
-    String sql = "insert into customers (first_name, last_name) values (?, ?)";
-    jdbcTemplate.update(sql, customer.getFirstName(), customer.getLastName());
-}
-```
-
-## delete
-
-#### public int update(String sql, @Nullable Object... args)
-
-```java
-public int delete(Long id) {
-    String sql = "delete from customers where id = ?";
-    return jdbcTemplate.update(sql, id);
-}
-```
-
-# NamedParameterJdbcTemplate 클래스
-
-- JdbcTemplate에서는 SQL문에 인자를 전달하기 위해 `?` 를 사용한다.
-- NamedParameterJdbcTemplate에서는 `?` 대신 `파라미터명` 을 사용할 수 있다.
-
-#### public <T> T queryForObject(String sql, SqlParameterSource paramSource, Class<T> requiredType)
-
-```java
-public int useMapSqlParameterSource(String firstName) {
-    String sql = "select count(*) from customers where first_name = :first_name";
-    SqlParameterSource namedParameters = new MapSqlParameterSource("first_name", firstName);
-    return namedParameterJdbcTemplate.queryForObject(sql, namedParameters, Integer.class);
-}
-```
-
-#### public <T> T queryForObject(String sql, SqlParameterSource paramSource, Class<T> requiredType)
-
-```java
-public int useBeanPropertySqlParameterSource(Customer customer) {
-    String sql = "select count(*) from customers where first_name = :firstName";
-    SqlParameterSource namedParameters = new BeanPropertySqlParameterSource(customer);
-    return namedParameterJdbcTemplate.queryForObject(sql, namedParameters, Integer.class);
-}
-```
-
-# SimpleJdbcInsert 클래스
-
-- `SimpleJdbcInsert` 를 사용해서 SQL문 작성 없이 쉽게 insert 할 수 있다.
-- 그냥 insert만 하고 싶다면 `execute` 메서드를, insert후 key값을 받아오고 싶으면 `executeAndReturnKey`를 사용하면 된다.
-
-```java
-public SimpleInsertDao(DataSource dataSource) {
-    this.simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
-            .withTableName("customers") // 테이블 지정
-            .usingGeneratedKeyColumns("id"); // insert시 id가 자동생성 되도록 설정
-}
-```
-
-#### executeAndReturnKey (Map사용)
-
-```java
-public Customer insertWithMap(Customer customer) {
-    Map<String, Object> parameters = new HashMap<>(2);
-    parameters.put("first_name",customer.getFirstName());
-    parameters.put("last_name",customer.getLastName());
-    Long id = simpleJdbcInsert.executeAndReturnKey(parameters).longValue();
-    return new Customer(id, customer.getFirstName(), customer.getLastName());
-}
-```
-
-#### executeAndReturnKey (SqlParameterSource 사용)
-
-```java
-public Customer insertWithBeanPropertySqlParameterSource(Customer customer) {
-    SqlParameterSource parameters = new BeanPropertySqlParameterSource(customer);
-    Long id = simpleJdbcInsert.executeAndReturnKey(parameters).longValue();
-    return new Customer(id, customer.getFirstName(), customer.getLastName());
-}
-```
+# JPA
 
 # 참고
 - https://velog.io/@seculoper235/JDBC-5편-jdbcTemplate
